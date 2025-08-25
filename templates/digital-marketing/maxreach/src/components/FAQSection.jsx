@@ -21,7 +21,7 @@ export default function FAQSection({ data }) {
   };
 
   return (
-    <section className="py-20 bg-custom-background relative">
+    <section className="py-12 sm:py-16 lg:py-20 bg-custom-background relative">
       {/* Subtle Grid Background */}
       <div className="absolute inset-0 opacity-5">
         <div
@@ -37,47 +37,47 @@ export default function FAQSection({ data }) {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-start">
           {/* Left Section */}
-          <div className="space-y-8">
-            <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+          <div className="space-y-6 sm:space-y-8 order-2 lg:order-1">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
               {d?.title || "Still Have Qs?"}
             </h2>
 
-            <p className="text-white/70 text-lg leading-relaxed">
+            <p className="text-white/70 text-base sm:text-lg leading-relaxed">
               {d?.description || "Find answers to common questions about our products, hosting, domains, and support."}
             </p>
 
-            <button className="inline-flex items-center gap-3 rounded-lg bg-gradient-to-r from-pink-400 to-orange-400 px-6 py-3 text-white font-semibold text-sm uppercase tracking-wide hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-300 hover:scale-105 active:scale-95">
-              <FiExternalLink className="text-lg" />
+            <button className="w-full sm:w-auto inline-flex items-center gap-2 sm:gap-3 rounded-lg bg-gradient-to-r from-pink-400 to-orange-400 px-4 sm:px-6 py-2.5 sm:py-3 text-white font-semibold text-sm uppercase tracking-wide hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-300 hover:scale-105 active:scale-95">
+              <FiExternalLink className="text-base sm:text-lg" />
               {d?.buttonText || "View Help Center"}
             </button>
           </div>
 
           {/* Right Section - FAQ Items */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4 order-1 lg:order-2">
             {faqItems.map((item) => {
               const open = expandedId === item.id;
               return (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-white/10 bg-custom-card bg-opacity-80 overflow-hidden hover:border-white/20 transition-all duration-300"
+                  className="rounded-xl sm:rounded-2xl border border-white/10 bg-custom-card bg-opacity-80 overflow-hidden hover:border-white/20 transition-all duration-300"
                 >
                   {/* Question Row */}
                   <button
                     onClick={() => toggleFAQ(item.id)}
-                    className="w-full p-6 text-left flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
+                    className="w-full p-4 sm:p-6 text-left flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
                     aria-expanded={open}
                     aria-controls={`faq-panel-${item.id}`}
                     id={`faq-trigger-${item.id}`}
                   >
-                    <span className="text-white font-medium text-lg">
+                    <span className="text-white font-medium text-base sm:text-lg pr-2">
                       {String(item.id).padStart(2, "0")}. {item.question}
                     </span>
                     {open ? (
-                      <FiChevronUp className="text-white/60 text-xl flex-shrink-0" />
+                      <FiChevronUp className="text-white/60 text-lg sm:text-xl flex-shrink-0" />
                     ) : (
-                      <FiChevronDown className="text-white/60 text-xl flex-shrink-0" />
+                      <FiChevronDown className="text-white/60 text-lg sm:text-xl flex-shrink-0" />
                     )}
                   </button>
 
@@ -93,13 +93,13 @@ export default function FAQSection({ data }) {
                   >
                     <div
                       className={`
-                        overflow-hidden px-6 pb-6
+                        overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6
                         transition-all duration-400 ease-out
                         ${open ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"}
                       `}
                     >
-                      <div className="pt-4 border-t border-white/10">
-                        <p className="text-white/70 leading-relaxed">{item.answer}</p>
+                      <div className="pt-3 sm:pt-4 border-t border-white/10">
+                        <p className="text-white/70 text-sm sm:text-base leading-relaxed">{item.answer}</p>
                       </div>
                     </div>
                   </div>

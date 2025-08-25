@@ -72,24 +72,24 @@ export default function StatsCounter({ data }) {
   return (
     <section
       ref={sectionRef}
-      className="py-10 bg-gradient-to-r from-amber-300 to-fuchsia-600"
+      className="py-8 sm:py-10 bg-gradient-to-r from-amber-300 to-fuchsia-600"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-center text-center md:flex-nowrap">
+        <div className="flex flex-wrap items-center justify-center text-center md:flex-nowrap gap-4 sm:gap-6">
           {statistics.map((stat, index) => (
             <Fragment key={index}>
-              <div className="w-1/2 p-4 md:w-auto md:flex-1">
-                <div className="text-4xl lg:text-5xl font-bold text-white">
+              <div className="w-1/2 sm:w-auto sm:flex-1 p-2 sm:p-4">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white">
                   {counts[index]}
                   {stat.suffix}
                 </div>
-                <div className="mt-2 text-sm font-semibold text-white/90 uppercase tracking-widest">
+                <div className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-white/90 uppercase tracking-widest">
                   {stat.label}
                 </div>
               </div>
 
               {index < statistics.length - 1 && (
-                <div className="hidden h-16 w-px bg-white/30 md:block" />
+                <div className="hidden h-12 sm:h-16 w-px bg-white/30 md:block" />
               )}
             </Fragment>
           ))}

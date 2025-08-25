@@ -13,10 +13,10 @@ import FooterNew from "./components/FooterNew.jsx";
 
 function App() {
   return (
-    <div className="min-h-screen bg-custom-background text-white font-sans">
+    <div className="min-h-screen bg-custom-background text-white font-sans overflow-x-hidden">
       <div className="absolute inset-0 -z-10 bg-custom-radial" />
       <Header />
-      <main>
+      <main className="relative z-10">
         <Hero />
         <Brands />
         <WorkPrinciples />

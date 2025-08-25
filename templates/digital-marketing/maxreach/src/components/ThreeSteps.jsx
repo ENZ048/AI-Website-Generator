@@ -14,47 +14,47 @@ export default function ThreeSteps({ data }) {
   const getIcon = (iconName) => {
     const IconComponent = FiIcons[iconName];
     if (IconComponent) {
-      return <IconComponent className="text-white text-3xl" />;
+      return <IconComponent className="text-white text-2xl sm:text-3xl" />;
     }
-    return <FiIcons.FiPhone className="text-white text-3xl" />; // Fallback
+    return <FiIcons.FiPhone className="text-white text-2xl sm:text-3xl" />; // Fallback
   };
 
   return (
-    <section className="relative py-20 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1B072F_0%,#0F0423_60%,#0B031C_100%)]">
+    <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1B072F_0%,#0F0423_60%,#0B031C_100%)]">
       {/* Background shapes */}
       <div className="pointer-events-none absolute inset-0 opacity-40">
-        <div className="absolute -top-40 left-1/2 h-80 w-[110%] -translate-x-1/2 rounded-[40px] bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,0,128,0.07),transparent_60%)]" />
-        <div className="absolute bottom-0 left-1/2 h-96 w-[120%] -translate-x-1/2 bg-[radial-gradient(50%_60%_at_50%_100%,rgba(255,140,64,0.08),transparent_60%)]" />
+        <div className="absolute -top-20 sm:-top-40 left-1/2 h-40 sm:h-80 w-[110%] -translate-x-1/2 rounded-[20px] sm:rounded-[40px] bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,0,128,0.07),transparent_60%)]" />
+        <div className="absolute bottom-0 left-1/2 h-48 sm:h-96 w-[120%] -translate-x-1/2 bg-[radial-gradient(50%_60%_at_50%_100%,rgba(255,140,64,0.08),transparent_60%)]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Badge */}
-        <div className="mb-6 flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5">
-            <span className="text-[12px] font-semibold tracking-wider text-white">
+        <div className="mb-4 sm:mb-6 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5">
+            <span className="text-[11px] sm:text-[12px] font-semibold tracking-wider text-white">
               {d?.badge || "How It Works"}
             </span>
           </span>
         </div>
 
         {/* Heading + sub */}
-        <div className="text-center mb-14">
-          <h2 className="mb-4 text-4xl lg:text-5xl font-extrabold text-white">
+        <div className="text-center mb-10 sm:mb-14">
+          <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white">
             {d?.heading || "Simple Steps to Success"}
           </h2>
-          <p className="mx-auto max-w-3xl text-lg leading-relaxed text-white/70">
+          <p className="mx-auto max-w-3xl text-base sm:text-lg leading-relaxed text-white/70 px-4 sm:px-0">
             {d?.description || "Follow our straightforward process to achieve your goals effectively and efficiently."}
           </p>
         </div>
 
         {/* Steps */}
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           {steps.map((step, i) => (
             <div
               key={step.title}
               className="relative flex flex-col items-center text-center lg:pr-8"
             >
-              {/* Vertical divider */}
+              {/* Vertical divider - hidden on mobile, shown on lg+ */}
               <span
                 className={`pointer-events-none absolute right-0 top-2 hidden h-[85%] w-px lg:block ${
                   i === steps.length - 1 ? "opacity-0" : "opacity-100"
@@ -63,7 +63,7 @@ export default function ThreeSteps({ data }) {
 
               {/* Icon disc with conditional background */}
               <div
-                className={`mb-6 grid h-20 w-20 place-items-center rounded-full shadow-lg shadow-pink-500/30 ring-1 ring-white/10 ${
+                className={`mb-4 sm:mb-6 grid h-16 w-16 sm:h-20 sm:w-20 place-items-center rounded-full shadow-lg shadow-pink-500/30 ring-1 ring-white/10 ${
                   i === steps.length - 1
                     ? "bg-gradient-to-br from-orange-400 to-pink-400"
                     : "bg-gradient-to-br from-pink-500 to-fuchsia-500"
@@ -72,14 +72,14 @@ export default function ThreeSteps({ data }) {
                 {getIcon(step.icon)}
               </div>
 
-              <h3 className="mb-2 text-[18px] font-semibold text-white">{step.title}</h3>
-              <p className="mb-6 max-w-[280px] text-sm leading-relaxed text-white/70">
+              <h3 className="mb-2 text-base sm:text-[18px] font-semibold text-white">{step.title}</h3>
+              <p className="mb-4 sm:mb-6 max-w-[280px] text-sm leading-relaxed text-white/70 px-2 sm:px-0">
                 {step.description}
               </p>
 
               <button
-                className="mt-auto inline-flex items-center justify-center rounded-full px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider
-                bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-lg shadow-pink-500/25 hover:opacity-90 transition"
+                className="mt-auto inline-flex items-center justify-center rounded-full px-4 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider
+                bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-lg shadow-pink-500/25 hover:opacity-90 transition w-full sm:w-auto"
               >
                 {d?.buttonText || "Get Started"}
               </button>

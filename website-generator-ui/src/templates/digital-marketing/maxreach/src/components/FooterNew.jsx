@@ -48,17 +48,17 @@ export default function FooterNew({ data }) {
 	return (
 		<footer className="bg-custom-background border-t border-white/10">
 			{/* Main Footer Content */}
-			<div className="py-16">
+			<div className="py-12 sm:py-16">
 				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					<div className="grid lg:grid-cols-4 gap-12">
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
 						{/* Left Column - Branding and Call to Action */}
-						<div className="lg:col-span-1 space-y-8">
+						<div className="sm:col-span-2 lg:col-span-1 space-y-6 sm:space-y-8">
 							{/* Logo */}
 							<div className="flex items-center gap-3">
 								<div className="w-8 h-8 rounded bg-gradient-to-br from-pink-400 to-orange-400 flex items-center justify-center">
 									<LogoIcon className="text-white text-lg" />
 								</div>
-								<span className="text-white text-xl font-semibold">{footerData.companyName}</span>
+								<span className="text-white text-lg sm:text-xl font-semibold">{footerData.companyName}</span>
 							</div>
 							
 							{/* Tagline */}
@@ -68,9 +68,9 @@ export default function FooterNew({ data }) {
 							
 							{/* Main CTA with Typing Animation */}
 							<div className="space-y-2">
-								<h3 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
+								<h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight">
 									{footerData.branding.heading.prefix}{" "}
-									<span className="text-pink-400 min-w-[200px] inline-block">
+									<span className="text-pink-400 min-w-[180px] sm:min-w-[200px] inline-block">
 										{currentText}
 										<span className="typing-cursor">|</span>
 									</span>
@@ -85,15 +85,15 @@ export default function FooterNew({ data }) {
 						</div>
 
 						{/* Right Columns - Navigation Links */}
-						<div className="lg:col-span-3">
-							<div className="grid sm:grid-cols-3 gap-8">
+						<div className="sm:col-span-2 lg:col-span-3">
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
 								{/* Services Column */}
-								<div className="space-y-4">
-									<h4 className="text-white font-semibold text-lg">Services</h4>
-									<ul className="space-y-3">
+								<div className="space-y-3 sm:space-y-4">
+									<h4 className="text-white font-semibold text-base sm:text-lg">Services</h4>
+									<ul className="space-y-2 sm:space-y-3">
 										{footerData.navigation.services.map((service, index) => (
 											<li key={index}>
-												<a href="#" className="text-white/70 hover:text-white transition-colors duration-200">
+												<a href="#" className="text-white/70 hover:text-white transition-colors duration-200 text-sm sm:text-base">
 													{service}
 												</a>
 											</li>
@@ -102,12 +102,12 @@ export default function FooterNew({ data }) {
 								</div>
 
 								{/* Company Column */}
-								<div className="space-y-4">
-									<h4 className="text-white font-semibold text-lg">Company</h4>
-									<ul className="space-y-3">
+								<div className="space-y-3 sm:space-y-4">
+									<h4 className="text-white font-semibold text-base sm:text-lg">Company</h4>
+									<ul className="space-y-2 sm:space-y-3">
 										{footerData.navigation.company.map((item, index) => (
 											<li key={index}>
-												<a href="#" className="text-white/70 hover:text-white transition-colors duration-200">
+												<a href="#" className="text-white/70 hover:text-white transition-colors duration-200 text-sm sm:text-base">
 													{item}
 												</a>
 											</li>
@@ -116,12 +116,12 @@ export default function FooterNew({ data }) {
 								</div>
 
 								{/* Support Column */}
-								<div className="space-y-4">
-									<h4 className="text-white font-semibold text-lg">Support</h4>
-									<ul className="space-y-3">
+								<div className="space-y-3 sm:space-y-4">
+									<h4 className="text-white font-semibold text-base sm:text-lg">Support</h4>
+									<ul className="space-y-2 sm:space-y-3">
 										{footerData.navigation.support.map((item, index) => (
 											<li key={index}>
-												<a href="#" className="text-white/70 hover:text-white transition-colors duration-200">
+												<a href="#" className="text-white/70 hover:text-white transition-colors duration-200 text-sm sm:text-base">
 													{item}
 												</a>
 											</li>
@@ -135,11 +135,11 @@ export default function FooterNew({ data }) {
 			</div>
 
 			{/* Bottom Section - Copyright and Legal Links */}
-			<div className="border-t border-white/10 py-6">
+			<div className="border-t border-white/10 py-4 sm:py-6">
 				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						{/* Copyright */}
-						<div className="text-white/60 text-sm">
+						<div className="text-white/60 text-xs sm:text-sm text-center sm:text-left">
 							Copyright © 2025{" "}
 							<a 
 								href="https://troikatech.in/" 
@@ -152,7 +152,7 @@ export default function FooterNew({ data }) {
 						</div>
 						
 						{/* Legal Links */}
-						<div className="flex items-center gap-6 text-white/60 text-sm">
+						<div className="flex items-center gap-4 sm:gap-6 text-white/60 text-xs sm:text-sm">
 							{[
 								"Terms of Use",
 								"Privacy Policy",
