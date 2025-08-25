@@ -1,4 +1,5 @@
 import * as FiIcons from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
 // Import the fallback data
 import { threeSteps as fallbackData } from "../data/siteContent";
 
@@ -10,6 +11,29 @@ export default function ThreeSteps({ data }) {
   // Use the data prop if provided, otherwise use the imported fallback
   const d = data || fallbackData;
   const steps = d?.steps || [];
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const getIcon = (iconName) => {
     const IconComponent = FiIcons[iconName];
@@ -20,7 +44,14 @@ export default function ThreeSteps({ data }) {
   };
 
   return (
-    <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1B072F_0%,#0F0423_60%,#0B031C_100%)]">
+    <section 
+      ref={sectionRef}
+      className={`relative py-12 sm:py-16 lg:py-20 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1B072F_0%,#0F0423_60%,#0B031C_100%)] transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 -translate-x-8'
+      }`}
+    >
       {/* Background shapes */}
       <div className="pointer-events-none absolute inset-0 opacity-40">
         <div className="absolute -top-20 sm:-top-40 left-1/2 h-40 sm:h-80 w-[110%] -translate-x-1/2 rounded-[20px] sm:rounded-[40px] bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,0,128,0.07),transparent_60%)]" />

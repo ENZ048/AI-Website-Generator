@@ -1,7 +1,30 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Brands() {
   const scrollRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   // Convert vertical wheel to horizontal scroll (desktop + trackpads)
   const onWheel = (e) => {
@@ -85,7 +108,14 @@ export default function Brands() {
   }, [enableAuto]);
 
   return (
-    <section className="py-8 sm:py-12 lg:py-16">
+    <section 
+      ref={sectionRef}
+      className={`py-8 sm:py-12 lg:py-16 transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 translate-x-8'
+      }`}
+    >
       <div className="mx-auto max-w-6xl px-4">
         <h2 className="text-center text-white/90 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 lg:mb-10 px-2">
           Join over 300,000+ businesses to create unique brand designs.

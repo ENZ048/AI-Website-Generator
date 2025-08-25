@@ -1,4 +1,5 @@
 import { FiAward, FiCheck } from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
 // Import the fallback data
 import { maxReachAdvantage as fallbackData } from "../data/siteContent";
 
@@ -10,9 +11,39 @@ export default function MaxReachAdvantage({ data }) {
   // Use the data prop if provided, otherwise use the imported fallback
   const d = data || fallbackData;
   const benefits = d?.benefits || [];
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   return (
-    <section className="relative w-full bg-[#0b0711] py-8 sm:py-12 md:py-16 lg:py-20 overflow-hidden">
+    <section 
+      ref={sectionRef}
+      className={`relative w-full bg-[#0b0711] py-8 sm:py-12 md:py-16 lg:py-20 overflow-hidden transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 -translate-x-8'
+      }`}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Card */}
         <div className="relative overflow-hidden rounded-[20px] sm:rounded-[28px] md:rounded-[32px] lg:rounded-[36px]">

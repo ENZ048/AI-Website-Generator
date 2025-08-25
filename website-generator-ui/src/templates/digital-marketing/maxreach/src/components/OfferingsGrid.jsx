@@ -1,5 +1,6 @@
 import { FiShare2, FiExternalLink } from "react-icons/fi";
 import * as FiIcons from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
 
 // Import the fallback data
 import { offeringsGrid as fallbackData } from "../data/siteContent";
@@ -12,6 +13,29 @@ export default function OfferingsGrid({ data }) {
   // Use the data prop if provided, otherwise use the imported fallback
   const d = data || fallbackData;
   const services = d?.services || [];
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const getIcon = (iconName) => {
     const IconComponent = FiIcons[iconName];
@@ -42,7 +66,14 @@ export default function OfferingsGrid({ data }) {
   }
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-custom-background relative">
+    <section 
+      ref={sectionRef}
+      className={`py-12 sm:py-16 lg:py-20 bg-custom-background relative transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-8'
+      }`}
+    >
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-pink-900/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,42,173,0.1),transparent_50%)]" />

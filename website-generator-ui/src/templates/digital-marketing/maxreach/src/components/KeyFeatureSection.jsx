@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as FiIcons from "react-icons/fi";
 
 // Import fallback data for both sections
@@ -6,7 +6,7 @@ import { keyFeature as fallbackKeyFeature, whyUs as fallbackWhyUs } from "../dat
 
 /**
  * Accepts a `data` prop containing `keyFeature` and `whyUs` objects.
- * If not provided, falls back to imported data from siteContent.js.
+ * If not provided, falls back to imported data from siteContent.js
  */
 export default function KeyFeatureSection({ data }) {
   // The data prop contains both keyFeature and whyUs objects from backend
@@ -17,10 +17,33 @@ export default function KeyFeatureSection({ data }) {
 
   const rotatingTexts = whyUs?.heading?.rotatingTexts || [];
   const features = whyUs?.features || [];
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
 
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (rotatingTexts.length === 0) return;
@@ -63,7 +86,14 @@ export default function KeyFeatureSection({ data }) {
   };
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-custom-background">
+    <section 
+      ref={sectionRef}
+      className={`py-12 sm:py-16 lg:py-20 bg-custom-background transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 translate-x-8'
+      }`}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8 sm:gap-10 lg:gap-12 items-stretch">
           {/* Left Column - KEY FEATURE */}

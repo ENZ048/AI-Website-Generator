@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 // Import the fallback data
 import { testimonials as fallbackData } from "../data/siteContent";
 
@@ -10,6 +10,8 @@ export default function TestimonialsDraggable({ data }) {
   // Use the data prop if provided, otherwise use the imported fallback
   const d = data || fallbackData;
   const testimonials = d?.testimonials || [];
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
 
   const scrollRef = useRef(null);
   const [drag, setDrag] = useState({
@@ -17,6 +19,27 @@ export default function TestimonialsDraggable({ data }) {
     startX: 0,
     scrollLeft: 0,
   });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const onMouseDown = (e) => {
     const el = scrollRef.current;
@@ -72,7 +95,14 @@ export default function TestimonialsDraggable({ data }) {
   const onTouchEnd = () => setDrag((prev) => ({ ...prev, active: false }));
 
   return (
-    <section className="py-12 sm:py-16 lg:py-24 bg-[#0b0712] bg-[radial-gradient(1200px_500px_at_50%_0%,rgba(168,85,247,.15),transparent_60%)]">
+    <section 
+      ref={sectionRef}
+      className={`py-12 sm:py-16 lg:py-24 bg-[#0b0712] bg-[radial-gradient(1200px_500px_at_50%_0%,rgba(168,85,247,.15),transparent_60%)] transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 translate-x-8'
+      }`}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12 sm:mb-16">

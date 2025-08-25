@@ -1,5 +1,6 @@
 import { FiEdit3 } from "react-icons/fi";
 import * as FiIcons from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
 // Import the fallback data
 import { workPrinciples as fallbackData } from "../data/siteContent";
 
@@ -12,6 +13,29 @@ export default function WorkPrinciples({ data }) {
   const d = data || fallbackData;
   const statistics = d?.statistics || [];
   const features = d?.features || [];
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const getIcon = (iconName) => {
     const IconComponent = FiIcons[iconName];
@@ -22,7 +46,14 @@ export default function WorkPrinciples({ data }) {
   };
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-custom-background">
+    <section 
+      ref={sectionRef}
+      className={`py-12 sm:py-16 lg:py-20 bg-custom-background transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 -translate-x-8'
+      }`}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12 items-center">
           

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiExternalLink, FiChevronUp, FiChevronDown } from "react-icons/fi";
 
 // Import the fallback data
@@ -12,16 +12,46 @@ export default function FAQSection({ data }) {
   // Use the data prop if provided, otherwise use the imported fallback
   const d = data || fallbackFaq;
   const faqItems = d?.faqItems || [];
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
 
   // The first item's ID is used as the initial state, or null if no items exist
   const [expandedId, setExpandedId] = useState(faqItems.length > 0 ? faqItems[0].id : null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
 
   const toggleFAQ = (id) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-custom-background relative">
+    <section 
+      ref={sectionRef}
+      className={`py-12 sm:py-16 lg:py-20 bg-custom-background relative transition-all duration-3000 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 translate-x-8'
+      }`}
+    >
       {/* Subtle Grid Background */}
       <div className="absolute inset-0 opacity-5">
         <div
