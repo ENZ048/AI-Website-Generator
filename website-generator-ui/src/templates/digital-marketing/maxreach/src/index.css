@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/* Custom CSS variables for theme colors */
+:root {
+  --color-background: #0b0614;
+  --color-card: #120a20;
+  --color-accent-pink: #ff2aad;
+  --color-accent-orange: #ff9d50;
+}
+
+/* Base resets & helpers that complement Tailwind utilities */
+html, body, #root {
+  height: 100%;
+}
+
+/* Custom utility classes for our theme colors */
+.bg-custom-background {
+  background-color: var(--color-background);
+}
+
+.bg-custom-card {
+  background-color: var(--color-card);
+}
+
+.text-custom-accent-pink {
+  color: var(--color-accent-pink);
+}
+
+.text-custom-accent-orange {
+  color: var(--color-accent-orange);
+}
+
+.bg-gradient-custom {
+  background: linear-gradient(to right, var(--color-accent-pink), var(--color-accent-orange));
+}
+
+.bg-gradient-custom-br {
+  background: linear-gradient(to bottom right, var(--color-accent-pink), var(--color-accent-orange));
+}
+
+/* Custom shadow utility */
+.shadow-soft {
+  box-shadow: 0 10px 30px rgba(255, 42, 173, 0.15);
+}
+
+/* Background with subtle radial gradients */
+.bg-custom-radial {
+  background: 
+    radial-gradient(60% 40% at 50% -10%, rgba(255, 42, 173, 0.15), transparent 60%),
+    radial-gradient(40% 30% at 70% 10%, rgba(255, 157, 80, 0.12), transparent 60%);
+}
+
+/* Gradient text utility */
+.text-gradient-custom {
+  background: linear-gradient(to right, var(--color-accent-pink), var(--color-accent-orange));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Text rotation animations */
+.text-rotate-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.text-rotate-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+.text-rotate-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.text-rotate-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+/* Typing cursor animation */
+.typing-cursor {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Hide scrollbar for horizontal scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Smooth scrolling for brands section */
+.overflow-x-auto {
+  scroll-behavior: smooth;
+}
