@@ -10,6 +10,8 @@ import puppeteer from "puppeteer";
 
 import { fetchReadable } from "../utils/fetchReadable.js";
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 const require = createRequire(import.meta.url);
 
 // Resolve repo root and template paths
@@ -302,20 +304,87 @@ export default siteContent;`;
   }
 });
 
-// Add this endpoint to your existing router
-router.get("/screenshot", async (req, res) => {
-  const { url } = req.query;
+async function waitForPageComplete(page, { timeout = 30000 } = {}) {
+  // wait for "complete"
+  await page.waitForFunction(() => document.readyState === "complete", {
+    timeout,
+  });
 
-  if (!url) {
-    return res.status(400).json({ error: "URL parameter required" });
+  // wait for fonts
+  try {
+    await page.evaluate(() =>
+      window.document.fonts ? window.document.fonts.ready : Promise.resolve()
+    );
+  } catch {}
+
+  // wait for images
+  try {
+    await page.evaluate(async () => {
+      const imgs = Array.from(document.images || []);
+      await Promise.all(
+        imgs.map((img) =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise((res) => {
+                img.addEventListener("load", res, { once: true });
+                img.addEventListener("error", res, { once: true });
+              })
+        )
+      );
+    });
+  } catch {}
+}
+
+// auto-scroll to trigger lazy loading
+async function autoScrollAndSettle(
+  page,
+  { step = 800, pause = 300, settle = 600, maxScrolls = 30 } = {}
+) {
+  // scroll down in steps, pause so observers/lazy loaders run
+  let total = 0;
+  for (let i = 0; i < maxScrolls; i++) {
+    const { scrolled, atBottom } = await page.evaluate(
+      ({ step }) => {
+        const before = window.scrollY;
+        window.scrollBy(0, step);
+        const after = window.scrollY;
+        const atBottom =
+          window.innerHeight + window.scrollY + 2 >= document.body.scrollHeight;
+        return { scrolled: after - before, atBottom };
+      },
+      { step }
+    );
+    await sleep(pause);
+    total += scrolled;
+    if (atBottom) break;
   }
 
-  try {
-    console.log(`Taking screenshot of: ${url}`);
+  // small settle time so new network requests can finish
+  await sleep(settle);
 
-    // Launch browser
-    const browser = await puppeteer.launch({
-      headless: true,
+  // optional: quick scroll back to top for full-page screenshots that look nicer
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await sleep(200);
+}
+
+// --- UPDATED: screenshot with viewport & fullPage options ---
+router.get("/screenshot", async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: "URL parameter required" });
+
+  // options
+  const fullPage = String(req.query.fullPage || "true") === "true";
+  const width = parseInt(req.query.width || "1366", 10);
+  const height = parseInt(req.query.height || "900", 10);
+  const dpr = Math.max(1, Math.min(3, parseFloat(req.query.dpr || "1"))); // devicePixelRatio
+  const delay = parseInt(req.query.delay || "0", 10); // extra delay after everything (ms)
+  const waitSelector = req.query.waitSelector || ""; // CSS selector to wait for if you know a key element
+  const maxScrolls = parseInt(req.query.maxScrolls || "30", 10);
+
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: true, // or "new" on newer versions
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -324,44 +393,106 @@ router.get("/screenshot", async (req, res) => {
         "--no-first-run",
         "--no-zygote",
         "--disable-gpu",
+        "--force-color-profile=srgb",
       ],
+      // executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, // if your host needs it
     });
 
     const page = await browser.newPage();
 
-    // Set viewport
-    await page.setViewport({ width: 1200, height: 800 });
+    // a realistic desktop UA helps some sites render full layout
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+    );
 
-    // Navigate to URL
-    await page.goto(url, {
-      waitUntil: "networkidle2",
-      timeout: 15000,
+    await page.setViewport({ width, height, deviceScaleFactor: dpr });
+
+    // Reduce animations; helps avoid capturing mid-transition frames
+    await page.evaluateOnNewDocument(() => {
+      const style = document.createElement("style");
+      style.innerHTML = `
+        * { animation: none !important; transition: none !important; }
+        html { scroll-behavior: auto !important; }
+      `;
+      document.documentElement.appendChild(style);
     });
 
-    // Wait a bit for dynamic content
-    await page.waitForTimeout(2000);
+    // Load the page; use a conservative waitUntil, then we do our own waits
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
 
-    // Take screenshot
-    const screenshot = await page.screenshot({
-      type: "png",
-      fullPage: false,
-      quality: 80,
-    });
+    // Optional: wait for a specific element if the site has a known main container
+    if (waitSelector) {
+      try {
+        await page.waitForSelector(waitSelector, { timeout: 10000 });
+      } catch {}
+    }
 
-    await browser.close();
+    await waitForPageComplete(page);
+    await autoScrollAndSettle(page, { maxScrolls });
 
-    // Set headers
+    if (delay > 0) await sleep(delay);
+
+    const png = await page.screenshot({ type: "png", fullPage });
+
     res.setHeader("Content-Type", "image/png");
-    res.setHeader("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
-    res.setHeader("X-Frame-Options", "ALLOWALL");
-
-    res.send(screenshot);
+    res.setHeader("Cache-Control", "public, max-age=900"); // 15 min
+    return res.send(png);
   } catch (error) {
     console.error(`Screenshot error for ${url}:`, error);
-    res.status(500).json({
+    return res.status(500).json({
       error: "Failed to take screenshot",
       details: error.message,
-      url: url,
+      url,
+    });
+  } finally {
+    if (browser) {
+      try {
+        await browser.close();
+      } catch {}
+    }
+  }
+});
+
+// --- NEW: quick check if a URL allows embedding ---
+function cspBlocksFraming(csp) {
+  if (!csp) return false; // no CSP => we won't block
+  const parts = csp.split(";").map((s) => s.trim().toLowerCase());
+  const fa = parts.find((p) => p.startsWith("frame-ancestors"));
+  if (!fa) return false; // no frame-ancestors => don't block here
+  // Generic project: if frame-ancestors is present, assume blocked unless you implement origin matching
+  return true;
+}
+
+router.get("/can-embed", async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: "URL parameter required" });
+
+  try {
+    // Try HEAD, then fallback to GET so we can follow redirects and still read headers
+    let r = await fetch(url, { method: "HEAD", redirect: "follow" });
+    if (!r.ok || r.status >= 400) {
+      r = await fetch(url, { method: "GET", redirect: "follow" });
+    }
+
+    const xfo = (r.headers.get("x-frame-options") || "").toLowerCase();
+    const csp = r.headers.get("content-security-policy") || "";
+
+    const xfoBlocks = xfo.includes("deny") || xfo.includes("sameorigin");
+    const cspBlocks = cspBlocksFraming(csp);
+
+    const embeddable = !(xfoBlocks || cspBlocks);
+    return res.json({
+      embeddable,
+      reasons: {
+        xFrameOptions: xfo || null,
+        contentSecurityPolicy: csp || null,
+      },
+    });
+  } catch (e) {
+    // If we can’t fetch headers, be conservative and say not embeddable
+    return res.json({
+      embeddable: false,
+      reasons: { error: String(e?.message || e) },
     });
   }
 });

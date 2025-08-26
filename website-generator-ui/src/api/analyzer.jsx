@@ -54,3 +54,26 @@ export async function analyzeSeed({ companyName, industry }) {
   const { data } = await axios.post(`${API_BASE_URL}/api/analyze`, { companyName, industry });
   return data;
 }
+
+export async function canEmbed(url) {
+  const { data } = await axios.get(`${API_BASE_URL}/api/analyze/can-embed`, {
+    params: { url },
+    timeout: 8000,
+  });
+  return data; // { embeddable: boolean, reasons: {...} }
+}
+
+export function getScreenshotUrl(url, opts = {}) {
+  const q = new URLSearchParams({
+    url,
+    fullPage: String(opts.fullPage ?? true),
+    width: String(opts.width ?? 1200),
+    height: String(opts.height ?? 800),
+    dpr: String(opts.dpr ?? 1),
+    maxScrolls: String(opts.maxScrolls ?? 30),
+    delay: String(opts.delay ?? 0),
+    waitSelector: opts.waitSelector || "",
+  });
+  return `${API_BASE_URL}/api/analyze/screenshot?${q.toString()}`;
+}
+
