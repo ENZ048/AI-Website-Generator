@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { analyzeUrl, analyzeSeed, checkBackendHealth } from "../api/analyzer";
-import { FiGlobe, FiHome, FiZap, FiRefreshCw, FiPlay, FiWifi, FiWifiOff } from "react-icons/fi";
-import axios from "axios";
+import { analyzeUrl, analyzeSeed } from "../api/analyzer";
+import { FiGlobe, FiHome, FiZap, FiRefreshCw, FiPlay } from "react-icons/fi";
 
 export default function GeneratorPanel({ onResult, onContextChange, onAnalysisStart, hasResult }) {
   const [mode, setMode] = useState("url");
@@ -10,17 +9,6 @@ export default function GeneratorPanel({ onResult, onContextChange, onAnalysisSt
   const [industry, setIndustry] = useState("digital-marketing");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [backendStatus, setBackendStatus] = useState({ isRunning: false, checking: true });
-
-  // Check backend health on component mount
-  useEffect(() => {
-    const checkHealth = async () => {
-      const status = await checkBackendHealth();
-      setBackendStatus({ ...status, checking: false });
-    };
-    
-    checkHealth();
-  }, []);
 
   // Listen for regenerate events from parent
   useEffect(() => {
@@ -130,58 +118,6 @@ export default function GeneratorPanel({ onResult, onContextChange, onAnalysisSt
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Website Generator</h2>
           <p className="text-slate-300 text-sm">Transform your ideas into stunning websites</p>
-          
-                     {/* Backend Status Indicator */}
-           <div className="mt-4 flex items-center justify-center gap-2">
-             {backendStatus.checking ? (
-               <div className="flex items-center gap-2 text-slate-300">
-                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-300 border-t-transparent"></div>
-                 <span className="text-xs">Checking backend...</span>
-               </div>
-             ) : backendStatus.isRunning ? (
-               <div className="flex items-center gap-2 text-green-300">
-                 <FiWifi className="w-4 h-4" />
-                 <span className="text-xs">Backend connected</span>
-               </div>
-             ) : (
-               <div className="flex items-center gap-2 text-red-300">
-                 <FiWifiOff className="w-4 h-4" />
-                 <span className="text-xs">Backend disconnected</span>
-               </div>
-             )}
-             
-             {/* Manual Test Button */}
-             <button
-               onClick={async () => {
-                 setBackendStatus({ isRunning: false, checking: true });
-                 const status = await checkBackendHealth();
-                 setBackendStatus({ ...status, checking: false });
-               }}
-               className="ml-2 px-2 py-1 text-xs bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 rounded transition-colors"
-               title="Test backend connection"
-             >
-               Test
-             </button>
-             
-             {/* Test API Endpoint Button */}
-             <button
-               onClick={async () => {
-                 try {
-                   console.log('Testing API endpoint...');
-                   const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050'}/api/analyze`);
-                   console.log('API endpoint test successful:', response.status);
-                   alert('API endpoint is accessible! Status: ' + response.status);
-                 } catch (error) {
-                   console.error('API endpoint test failed:', error);
-                   alert('API endpoint test failed: ' + error.message);
-                 }
-               }}
-               className="ml-2 px-2 py-1 text-xs bg-blue-600/50 hover:bg-blue-500/50 text-blue-300 rounded transition-colors"
-               title="Test API endpoint"
-             >
-               Test API
-             </button>
-           </div>
         </div>
 
         {/* Form Controls */}

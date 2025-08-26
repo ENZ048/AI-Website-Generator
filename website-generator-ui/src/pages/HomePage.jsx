@@ -70,13 +70,6 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col gap-3 p-4">
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-lg mb-3 shadow-lg">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-          <span className="text-sm font-medium">TEST: If you can see this blue box, React is working!</span>
-        </div>
-      </div>
-      
       {/* Generator Panel - Always visible, positioned based on state */}
       <div className={`transition-all duration-500 ease-in-out ${
         showPreviewLayout 
