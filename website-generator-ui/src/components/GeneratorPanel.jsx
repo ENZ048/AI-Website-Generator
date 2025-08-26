@@ -1,8 +1,13 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { analyzeUrl, analyzeSeed } from "../api/analyzer";
-import { FiGlobe, FiHome, FiZap, FiRefreshCw, FiPlay } from "react-icons/fi";
+import { FiGlobe, FiHome, FiZap, FiPlay } from "react-icons/fi";
 
-export default function GeneratorPanel({ onResult, onContextChange, onAnalysisStart, hasResult }) {
+export default function GeneratorPanel({ 
+  onResult, 
+  onAnalysisStart, 
+  onGenerationStart,
+  syncContext 
+}) {
   const [mode, setMode] = useState("url");
   const [url, setUrl] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -26,20 +31,11 @@ export default function GeneratorPanel({ onResult, onContextChange, onAnalysisSt
     return () => window.removeEventListener('regenerate', handleRegenerate);
   }, []);
 
-  const syncContext = useCallback((next = {}) => {
-    onContextChange?.({
-      mode,
-      url,
-      companyName,
-      industry,
-      ...next
-    });
-  }, [mode, url, companyName, industry, onContextChange]);
-
-  async function run() {
+  const run = async () => {
     setLoading(true);
     setError("");
     onAnalysisStart?.(); // Notify parent that analysis has started
+    onGenerationStart?.(); // Notify parent to show preview panels
     
     try {
       // Validate inputs before sending
@@ -74,7 +70,12 @@ export default function GeneratorPanel({ onResult, onContextChange, onAnalysisSt
       
       console.log("API response:", data);
       onResult?.(data);
-      syncContext();
+      syncContext?.({
+        mode,
+        url,
+        companyName,
+        industry
+      });
     } catch (e) {
       console.error("Generation error:", e);
       
@@ -86,11 +87,12 @@ export default function GeneratorPanel({ onResult, onContextChange, onAnalysisSt
         errorMessage = e.response.data?.error || e.response.data?.message || `Server error: ${e.response.status}`;
       } else if (e.request) {
         // Request was made but no response received
-        console.error("No response received:", e.request);
-        errorMessage = "No response from server. Please check if the backend is running.";
+        console.error("Network error - no response received:", e.request);
+        errorMessage = "Network error - please check your connection";
       } else {
         // Something else happened
-        errorMessage = e.message || "Unknown error occurred";
+        console.error("Other error:", e.message);
+        errorMessage = e.message || "An unexpected error occurred";
       }
       
       setError(errorMessage);
@@ -99,145 +101,124 @@ export default function GeneratorPanel({ onResult, onContextChange, onAnalysisSt
     }
   }
 
-  async function regenerate() {
-    // same inputs; just re-call to get a fresh variation
-    await run();
-  }
-
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 shadow-2xl border border-slate-700/50">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)]"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(120,119,198,0.1),transparent_50%)]"></div>
-      
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-4 shadow-lg">
-            <FiZap className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Website Generator</h2>
-          <p className="text-slate-300 text-sm">Transform your ideas into stunning websites</p>
+    <div className="w-full max-w-4xl mx-auto p-8 bg-gradient-to-br from-white via-gray-50 to-blue-50 rounded-3xl shadow-2xl border border-gray-100" style={{ fontFamily: 'Figtree, sans-serif' }}>
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
+          <FiZap className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">Website Generator</h2>
+        <p className="text-gray-600 text-lg">Transform your ideas into stunning websites</p>
+      </div>
+
+      {/* Form Controls */}
+      <div className="space-y-6">
+        {/* Mode Selection */}
+        <div className="flex items-center justify-center space-x-3 p-2 bg-gray-100 rounded-2xl">
+          <button
+            onClick={() => { setMode("url"); syncContext({ mode: "url" }); }}
+            className={`flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+              mode === "url"
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
+                : "text-gray-600 hover:text-gray-900 hover:bg-white"
+            }`}
+          >
+            <FiGlobe className="w-5 h-5" />
+            I have a website
+          </button>
+          <button
+            onClick={() => { setMode("seed"); syncContext({ mode: "seed" }); }}
+            className={`flex items-center gap-3 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+              mode === "seed"
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
+                : "text-gray-600 hover:text-gray-900 hover:bg-white"
+            }`}
+          >
+            <FiHome className="w-5 h-5" />
+            No website
+          </button>
         </div>
 
-        {/* Form Controls */}
-        <div className="space-y-4">
-          {/* Mode Selection */}
-          <div className="flex items-center justify-center space-x-2 p-1 bg-slate-800/50 rounded-xl">
-            <button
-              onClick={() => { setMode("url"); syncContext({ mode: "url" }); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                mode === "url"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
-                  : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-              }`}
-            >
-              <FiGlobe className="w-4 h-4" />
-              I have a website
-            </button>
-            <button
-              onClick={() => { setMode("seed"); syncContext({ mode: "seed" }); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                mode === "seed"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
-                  : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-              }`}
-            >
-              <FiHome className="w-4 h-4" />
-              No website
-            </button>
-          </div>
-
-          {/* Input Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mode === "url" ? (
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiGlobe className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  value={url}
-                  onChange={(e) => { setUrl(e.target.value); syncContext({ url: e.target.value }); }}
-                  placeholder="https://example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
-                />
-              </div>
-            ) : (
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiHome className="h-5 w-5 text-slate-400" />
-                </div>
-                <input
-                  value={companyName}
-                  onChange={(e) => { setCompanyName(e.target.value); syncContext({ companyName: e.target.value }); }}
-                  placeholder="Company name"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
-                />
-              </div>
-            )}
-
+        {/* Input Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {mode === "url" ? (
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiZap className="h-5 w-5 text-slate-400" />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <FiGlobe className="h-5 w-5 text-gray-400" />
               </div>
-              <select
-                value={industry}
-                onChange={(e) => { setIndustry(e.target.value); syncContext({ industry: e.target.value }); }}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 appearance-none cursor-pointer"
-              >
-                <option value="digital-marketing">Digital Marketing</option>
-                {/* add more industries later */}
-              </select>
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+              <input
+                value={url}
+                onChange={(e) => { setUrl(e.target.value); syncContext({ url: e.target.value }); }}
+                placeholder="https://example.com"
+                className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm"
+              />
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="pt-2 space-y-3">
-            <button
-              onClick={run}
-              disabled={loading || (mode === "url" ? !url : !companyName)}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed transition-all duration-200"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                  {mode === "url" ? "Re-designing..." : "Creating..."}
-                </>
-              ) : (
-                <>
-                  <FiPlay className="w-5 h-5" />
-                  {mode === "url" ? "Generate Clone" : "Generate Website"}
-                </>
-              )}
-            </button>
-
-            {/* Regenerate Button - Only visible when there's a result */}
-            {hasResult && (
-              <button
-                onClick={regenerate}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed transition-all duration-200"
-              >
-                <FiRefreshCw className="w-5 h-5" />
-                Regenerate Website
-              </button>
-            )}
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-300">
-              <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-sm">{error}</span>
+          ) : (
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <FiHome className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                value={companyName}
+                onChange={(e) => { setCompanyName(e.target.value); syncContext({ companyName: e.target.value }); }}
+                placeholder="Your Company Name"
+                className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm"
+              />
             </div>
           )}
+          
+          <div className="relative">
+            <select
+              value={industry}
+              onChange={(e) => { setIndustry(e.target.value); syncContext({ industry: e.target.value }); }}
+              className="w-full pl-4 pr-12 py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm appearance-none cursor-pointer"
+            >
+              <option value="digital-marketing">Digital Marketing</option>
+              <option value="ecommerce">E-commerce</option>
+              <option value="saas">SaaS</option>
+              <option value="consulting">Consulting</option>
+              <option value="healthcare">Healthcare</option>
+              <option value="education">Education</option>
+              <option value="real-estate">Real Estate</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="fitness">Fitness</option>
+              <option value="creative">Creative Agency</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+            <p className="text-red-700 text-sm font-medium">{error}</p>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <button
+            onClick={run}
+            disabled={loading}
+            className="flex-1 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            {loading ? (
+              <>
+                <FiPlay className="w-5 h-5 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FiPlay className="w-5 h-5" />
+                Generate Website
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
