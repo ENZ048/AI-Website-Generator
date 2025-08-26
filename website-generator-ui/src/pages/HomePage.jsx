@@ -3,7 +3,9 @@ import GeneratorPanel from "../components/GeneratorPanel";
 import PreviewPane from "../components/PreviewPane";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import TemplateHost from "../templates/TemplateHost";
+import CreativeLoader from "../components/CreativeLoader";
 import { FiZap } from "react-icons/fi";
+import confetti from 'canvas-confetti';
 
 export default function HomePage() {
   const [result, setResult] = useState(null);
@@ -17,19 +19,7 @@ export default function HomePage() {
   const [showPreviewLayout, setShowPreviewLayout] = useState(false);
   const [showFullScreen, setShowFullScreen] = useState(false);
   const [showLeftFullScreen, setShowLeftFullScreen] = useState(false);
-  const [currentLoadingText, setCurrentLoadingText] = useState("");
-  const [loadingTexts] = useState([
-    "🎨 Crafting your digital masterpiece...",
-    "🚀 Launching your online presence...",
-    "✨ Weaving digital magic...",
-    "🎯 Building your brand's digital home...",
-    "🌟 Creating something extraordinary...",
-    "💫 Transforming ideas into pixels...",
-    "🎪 Setting up your digital stage...",
-    "🔮 Manifesting your vision..."
-  ]);
-  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
-
+  const [websiteReady, setWebsiteReady] = useState(false);
   // Context synchronization function
   const syncContext = (updates = {}) => {
     setCtx(prev => ({
@@ -38,30 +28,66 @@ export default function HomePage() {
     }));
   };
 
-  // Loading text animation
+  // Trigger confetti when website is ready
   useEffect(() => {
-    if (isAnalyzing) {
-      const interval = setInterval(() => {
-        setLoadingTextIndex((prev) => (prev + 1) % loadingTexts.length);
-      }, 2000);
-      return () => clearInterval(interval);
-    }
-  }, [isAnalyzing, loadingTexts.length]);
+    if (websiteReady) {
+      // Burst confetti from bottom center
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 1, x: 0.5 },
+        colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'],
+        shapes: ['circle', 'square'],
+        gravity: 0.8,
+        scalar: 1.2,
+        drift: 0,
+        ticks: 200
+      });
 
-  useEffect(() => {
-    setCurrentLoadingText(loadingTexts[loadingTextIndex]);
-  }, [loadingTextIndex, loadingTexts]);
+      // Additional bursts for more celebration
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          spread: 50,
+          origin: { y: 1, x: 0.3 },
+          colors: ['#ff6b6b', '#4ecdc4', '#45b7d1'],
+          shapes: ['circle'],
+          gravity: 0.6,
+          scalar: 1.5
+        });
+      }, 200);
+
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          spread: 50,
+          origin: { y: 1, x: 0.7 },
+          colors: ['#96ceb4', '#feca57', '#ff9ff3'],
+          shapes: ['square'],
+          gravity: 0.6,
+          scalar: 1.5
+        });
+      }, 400);
+
+      // Hide the celebration message after 3 seconds
+      setTimeout(() => {
+        setWebsiteReady(false);
+      }, 3000);
+    }
+  }, [websiteReady]);
 
   const handleResult = (data) => {
     console.log("Received result data:", data);
     setResult(data);
     setIsAnalyzing(false);
+    setWebsiteReady(true);
   };
 
   const handleAnalysisStart = () => {
     setIsAnalyzing(true);
     setShowPreviewLayout(false);
     setResult(null);
+    setWebsiteReady(false);
   };
 
   return (
@@ -78,6 +104,8 @@ export default function HomePage() {
       </style>
       
       <div className="generator-page min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+
+        
         <div className="flex min-h-screen flex-col gap-6 p-6">
           {/* Generator Panel - Always visible, positioned based on state */}
           <div className={`transition-all duration-500 ease-in-out ${
@@ -167,33 +195,32 @@ export default function HomePage() {
                 <div className="h-[calc(100%-52px)] overflow-auto">
                   <ErrorBoundary>
                     {isAnalyzing ? (
-                      <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100">
-                        <div className="text-center space-y-6 p-8">
-                          <div className="relative">
-                            <div className="animate-spin rounded-full h-20 w-20 border-4 border-gray-200 border-t-blue-600 mx-auto"></div>
-                          </div>
-                          <div className="space-y-3">
-                            <h3 className="text-xl font-semibold text-gray-700">
-                              {ctx.mode === "url" ? "Re-designing Your Website..." : "Creating Your Website..."}
-                            </h3>
-                            <p className="text-sm text-gray-500 transition-all duration-500 max-w-sm mx-auto font-medium">
-                              {currentLoadingText}
-                            </p>
-                            <div className="flex justify-center space-x-2">
-                              <div className="animate-pulse bg-blue-400 rounded-full h-2 w-2"></div>
-                              <div className="animate-pulse bg-blue-400 rounded-full h-2 w-2" style={{animationDelay: '0.2s'}}></div>
-                              <div className="animate-pulse bg-blue-400 rounded-full h-2 w-2" style={{animationDelay: '0.4s'}}></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <CreativeLoader 
+                        isGenerating={isAnalyzing}
+                        isWebsiteReady={false}
+                      />
                     ) : result ? (
                       result.templateId && result.siteContent ? (
-                        <div className="min-h-full w-full">
+                        <div className="min-h-full w-full relative">
                           <TemplateHost
                             templateId={result.templateId}
                             content={result.siteContent}
                           />
+                          {/* Show confetti celebration when website first appears */}
+                          {websiteReady && (
+                            <div className="fixed inset-0 pointer-events-none z-10">
+                              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-gray-200">
+                                  <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                                    🎉 Your Fresh Website is Ready! 🎉
+                                  </h1>
+                                  <p className="text-lg text-gray-600">
+                                    Time to see the magic you've created!
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="flex items-center justify-center h-full bg-gray-50">
